@@ -1,0 +1,19 @@
+<div style="margin-top: 25px;" class="container-sm ">
+    <h1 class="text-center ">Formulario para agregar usuario</h1>
+    <form style="max-width: 400px; margin: 0 auto;" #form='ngForm' (ngSubmit)="addUsuario()">
+        <div class="mb-3">
+            <label for="nombre" class="form-label">Nombre</label>
+            <input type="text" class="form-control" id="nombre" name="name" aria-describedby="emailHelp" [(ngModel)]="agregarUsuario.nombre">
+            
+        </div>
+        <div class="mb-3">
+            <label for="Direccion" class="form-label">Direccion</label>
+            <input type="text" class="form-control" name="direccion" id="Direccion" [(ngModel)]="agregarUsuario.direccion">
+        </div>
+        <div class="mb-3 ">
+            <label class="form-check-label" for="telefono">Telefono</label>
+            <input type="text" class="form-control" id="telefono" name="telefono" aria-describedby="emailHelp" [(ngModel)]="agregarUsuario.telefono">
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+</div>

@@ -1,0 +1,23 @@
+<div class="container text-center my-5">
+  <h1 class="">tabla de usuarios</h1>
+
+<table class="table my-4 " *ngIf="usuario && usuario.length > 0">
+  <thead>
+    <tr>
+      <th scope="col">Id</th>
+      <th scope="col">Nombre</th>
+      <th scope="col">Apellido</th>
+      <th scope="col">telefono</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let usuario of usuario" >
+      <th scope="row">{{usuario.id}}</th>
+      <td>{{usuario.nombre}}</td>
+      <td>{{usuario.direccion}}</td>
+      <td>{{usuario.telefono}}</td>
+    </tr>
+  </tbody>
+</table>
+<p class="h4 pb-2 mb-4 text-danger border-bottom border-danger my-4" *ngIf="!usuario || usuario.length <= 0">No hay usuarios</p>
+</div>
