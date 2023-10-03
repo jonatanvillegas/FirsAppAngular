@@ -1,6 +1,7 @@
 ﻿using Dapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Data;
 using System.Data.SqlClient;
 using WebApplication1.Models;
 
@@ -48,6 +49,7 @@ namespace WebApplication1.Controllers
                 parametro.Add("@Nombre", cl.Nombre);
                 parametro.Add("@Direccion", cl.Direccion);
                 parametro.Add("@Telefono", cl.Telefono);
+                
                 var oCliente = conexion.Query<Cliente>("SP_InsertarCliente", parametro, commandType: System.Data.CommandType.StoredProcedure);
 
                 // Verificar si la operación fue exitosa (por ejemplo, si oCliente no es nulo)
@@ -87,14 +89,29 @@ namespace WebApplication1.Controllers
         }
 
         [HttpDelete("{ID}")]
-        public async Task<ActionResult<List<Cliente>>> DeleteClientebyID(int ID)
+        public async Task<ActionResult> DeleteClientebyID(int ID)
         {
-            using var conexion = new SqlConnection(_Config.GetConnectionString("base"));
-            conexion.Open();
-            var parametro = new DynamicParameters();
-            parametro.Add("@Id", ID);
-            var oCliente = conexion.Query<Cliente>("SP_EliminarCliente", parametro, commandType: System.Data.CommandType.StoredProcedure);
-            return Ok(oCliente);
+            try
+            {
+                using (var conexion = new SqlConnection(_Config.GetConnectionString("base")))
+                {
+                    await conexion.OpenAsync();
+
+                    var parametro = new DynamicParameters();
+                    parametro.Add("@Id", ID);
+
+                    // Ejecutar el procedimiento almacenado para eliminar el cliente
+                    await conexion.ExecuteAsync("SP_EliminarCliente", parametro, commandType: CommandType.StoredProcedure);
+
+                    // Devolver una respuesta de éxito
+                    return Ok("Cliente eliminado correctamente.");
+                }
+            }
+            catch (Exception ex)
+            {
+                // Manejar errores y devolver una respuesta de error
+                return StatusCode(500, $"Error al eliminar el cliente: {ex.Message}");
+            }
         }
     }   
 
