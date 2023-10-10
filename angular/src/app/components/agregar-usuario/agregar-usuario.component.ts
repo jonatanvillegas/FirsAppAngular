@@ -29,7 +29,7 @@ export class AgregarUsuarioComponent implements OnInit{
     this.usuariosService.addUsuario(this.agregarUsuario)
     .subscribe({
       next: (usuario) => {
-        this.router.navigate(['/usuario'])
+        this.router.navigate(['/'])
       }
     })
   }

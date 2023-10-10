@@ -21,7 +21,7 @@ namespace WebApplication1.Controllers
         [HttpGet]
         public async Task<ActionResult<List<Cliente>>> GetAllCliente()
         {
-            using var conexion = new SqlConnection(_Config.GetConnectionString("base"));
+            using var conexion = new SqlConnection(_Config.GetConnectionString("DefaultConnection"));
             conexion.Open();
             var oCliente = conexion.Query<Cliente>("SP_ObtenerTodosLosClientes", commandType: System.Data.CommandType.StoredProcedure);
             return Ok(oCliente);
@@ -73,20 +73,44 @@ namespace WebApplication1.Controllers
                 return StatusCode(500, new { mensaje });
             }
         }
-
         [HttpPut]
-        public async Task<ActionResult<List<Cliente>>> UpdateCliente(Cliente cl)
+        public async Task<ActionResult<Cliente>> UpdateCliente(Cliente cl)
         {
-            using var conexion = new SqlConnection(_Config.GetConnectionString("base"));
-            conexion.Open();
-            var parametro = new DynamicParameters();
-            parametro.Add("@Id", cl.Id);
-            parametro.Add("@Nombre", cl.Nombre);
-            parametro.Add("@Direccion", cl.Direccion);
-            parametro.Add("@Telefono", cl.Telefono);
-            var oCliente = conexion.Query<Cliente>("SP_ActualizarCliente ", parametro, commandType: System.Data.CommandType.StoredProcedure);
-            return Ok(oCliente);
+            try
+            {
+                using (var conexion = new SqlConnection(_Config.GetConnectionString("base")))
+                {
+                    await conexion.OpenAsync();
+
+                    var parametro = new DynamicParameters();
+                    parametro.Add("@Id", cl.Id);
+                    parametro.Add("@Nombre", cl.Nombre);
+                    parametro.Add("@Direccion", cl.Direccion);
+                    parametro.Add("@Telefono", cl.Telefono);
+
+                    // Ejecutar el procedimiento almacenado para actualizar el cliente
+                    await conexion.ExecuteAsync("SP_ActualizarCliente", parametro, commandType: CommandType.StoredProcedure);
+
+                    // Devolver el cliente actualizado (puedes cargarlo nuevamente desde la base de datos si es necesario)
+                    var clienteActualizado = await conexion.QuerySingleOrDefaultAsync<Cliente>("SELECT * FROM Clientes WHERE Id = @Id", new { Id = cl.Id });
+
+                    if (clienteActualizado != null)
+                    {
+                        return Ok(clienteActualizado);
+                    }
+                    else
+                    {
+                        return NotFound(); // El cliente no se encontró después de la actualización
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Manejar errores y devolver una respuesta de error
+                return StatusCode(500, $"Error al actualizar el cliente: {ex.Message}");
+            }
         }
+
 
         [HttpDelete("{ID}")]
         public async Task<ActionResult> DeleteClientebyID(int ID)
@@ -99,17 +123,14 @@ namespace WebApplication1.Controllers
 
                     var parametro = new DynamicParameters();
                     parametro.Add("@Id", ID);
-
-                    // Ejecutar el procedimiento almacenado para eliminar el cliente
                     await conexion.ExecuteAsync("SP_EliminarCliente", parametro, commandType: CommandType.StoredProcedure);
 
-                    // Devolver una respuesta de éxito
                     return Ok("Cliente eliminado correctamente.");
                 }
             }
             catch (Exception ex)
             {
-                // Manejar errores y devolver una respuesta de error
+                
                 return StatusCode(500, $"Error al eliminar el cliente: {ex.Message}");
             }
         }
